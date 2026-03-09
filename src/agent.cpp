@@ -1,117 +1,117 @@
 #include "agent.h"
-#include "config.h"
 #include "logger.h"
-#include <csignal>
 #include <chrono>
-#include <thread>
-#include <iostream>  // <-- Добавьте этот include для std::cerr
+#include <nlohmann/json.hpp>
 
-namespace cardiology {
+WebAgent::WebAgent(const Config& cfg)
+    : config(cfg), network(cfg.server_url), running(false) {}
 
-// Указатель на экземпляр агента для обработчика сигналов
-static Agent* g_agent_instance = nullptr;
+void WebAgent::start() {
+    running = true;
+    Logger::info("Agent starting...");
 
-Agent::Agent() {
-    g_agent_instance = this;  // <-- Сохраняем указатель на себя
-    
-    // Устанавливаем обработчик сигналов
-    std::signal(SIGINT, Agent::signalHandler);
-    std::signal(SIGTERM, Agent::signalHandler);
-#ifdef _WIN32
-    std::signal(SIGBREAK, Agent::signalHandler);
-#else
-    std::signal(SIGQUIT, Agent::signalHandler);
-#endif
-}
-
-Agent::~Agent() {
-    stop();
-    g_agent_instance = nullptr;
-}
-
-bool Agent::initialize(const std::string& config_file) {
-    // Загружаем конфигурацию
-    if (!Config::getInstance().loadFromFile(config_file)) {
-        std::cerr << "Failed to load configuration from: " << config_file << std::endl;
-        return false;
+    // Регистрация
+    while (running && !network.registerAgent(config.uid, config.descr, access_code)) {
+        Logger::warn("Registration failed, retrying in 10s...");
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
-    
-    // Инициализируем логгер
-    if (!Logger::getInstance().initialize(
-            Config::getInstance().getLogFile(),
-            Config::getInstance().getLogLevel())) {
-        std::cerr << "Failed to initialize logger" << std::endl;
-        return false;
+    if (!running) return;
+
+    // Рабочие потоки (2 потока для параллельной работы)
+    for (int i = 0; i < 2; ++i) {
+        workerThreads.emplace_back(&WebAgent::workerLoop, this);
     }
-    
-    // Устанавливаем интервал опроса из конфига
-    poll_interval_ = std::chrono::seconds(Config::getInstance().getPollIntervalSec());
-    
-    initialized_ = true;
-    LOG_INFO("Agent initialized successfully. UID: {}, Server: {}", 
-             Config::getInstance().getUid(),
-             Config::getInstance().getServerUrl());
-    
-    return true;
+
+    // Поток опроса
+    pollThread = std::thread(&WebAgent::pollLoop, this);
 }
 
-void Agent::run() {
-    if (!initialized_) {
-        LOG_ERROR("Agent not initialized. Call initialize() first.");
-        return;
+void WebAgent::stop() {
+    running = false;
+    if (pollThread.joinable()) pollThread.join();
+    for (auto& t : workerThreads) {
+        if (t.joinable()) t.join();
     }
-    
-    running_ = true;
-    LOG_INFO("Agent started. Poll interval: {} seconds", poll_interval_.count());
-    
-    // Запускаем основной цикл в отдельном потоке
-    main_thread_ = std::make_unique<std::thread>(&Agent::mainLoop, this);
+    Logger::info("Agent stopped");
 }
 
-void Agent::stop() {
-    if (running_) {
-        LOG_INFO("Stopping agent...");
-        running_ = false;
-        
-        if (main_thread_ && main_thread_->joinable()) {
-            main_thread_->join();
+void WebAgent::pollLoop() {
+    while (running) {
+        auto taskJson = network.getTask(config.uid, config.descr, access_code);
+
+        bool hasTask = false;
+
+        if (!taskJson.is_null() && taskJson.contains("code_responce")) {
+            try {
+                std::string code = taskJson["code_responce"].get<std::string>();
+                if (code == "1") {
+                    hasTask = true;
+                } else if (code == "0") {
+                    // Нет задания, ждем
+                    Logger::debug("No task, waiting...");
+                } else if (code == "-2") {
+                    Logger::error("Invalid access code or request");
+                }
+            } catch (const std::exception& e) {
+                Logger::error("Error parsing code_responce: " + std::string(e.what()));
+            }
         }
-        
-        LOG_INFO("Agent stopped");
-    }
-}
 
-void Agent::mainLoop() {
-    LOG_INFO("Main loop started");
-    
-    int iteration = 0;
-    
-    while (running_) {
-        iteration++;
-        LOG_DEBUG("Poll iteration #{}", iteration);
-        
-        // TODO: Здесь будет реальный опрос сервера (ЛР №3)
-        // Пока просто имитируем работу
-        LOG_INFO("Polling server... (iteration {})", iteration);
-        
-        // Спим заданный интервал
-        for (int i = 0; i < poll_interval_.count() && running_; ++i) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+        if (hasTask) {
+            Task t;
+            t.session_id = taskJson.value("session_id", "");
+            t.task_code = taskJson.value("task_code", "");
+            t.options = taskJson.value("options", "");
+
+            {
+                std::lock_guard<std::mutex> lock(queueMutex);
+                taskQueue.push(t);
+            }
+            Logger::info("Task received: " + t.task_code + " Session: " + t.session_id);
+        } else {
+            std::this_thread::sleep_for(std::chrono::seconds(config.poll_interval_sec));
         }
     }
-    
-    LOG_INFO("Main loop finished");
 }
 
-bool Agent::isRunning() const {
-    return running_;
-}
+void WebAgent::workerLoop() {
+    while (running) {
+        Task currentTask;
+        bool hasTask = false;
 
-void Agent::signalHandler(int signal) {
-    // Используем глобальный указатель вместо временного объекта
-    if (g_agent_instance) {
-        g_agent_instance->stop();
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            if (!taskQueue.empty()) {
+                currentTask = taskQueue.front();
+                taskQueue.pop();
+                hasTask = true;
+            }
+        }
+
+        if (hasTask) {
+            executeTask(currentTask);
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
     }
 }
 
-} // namespace cardiology
+void WebAgent::executeTask(const Task& task) {
+    Logger::info("Executing task: " + task.task_code + " Session: " + task.session_id);
+
+    int result_code = 0;
+
+    // Формируем result JSON по API (должен содержать UID, access_code, message, files, session_id)
+    nlohmann::json resultData = {
+        {"UID", config.uid},
+        {"access_code", access_code},
+        {"message", "Task completed successfully"},
+        {"files", 0},
+        {"session_id", task.session_id}
+    };
+    std::string result_json = resultData.dump();
+
+    std::vector<std::string> files = {};
+
+    network.sendResult(config.uid, access_code, task.session_id, result_code, result_json, files);
+}

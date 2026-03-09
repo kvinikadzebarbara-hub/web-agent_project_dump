@@ -1,10 +1,9 @@
 {
-    "uid": "cardiology-agent-001",
-    "server_url": "https://api.example.com/agent",
+    "uid": "agent-001",
+    "descr": "web-agent",
+    "server_url": "https://xdev.arkcom.ru:9999/app/webagent1/api",
     "poll_interval_sec": 10,
-    "log_file": "logs/agent.log",
-    "log_level": "debug",
-    "work_dir": "./work",
-    "result_dir": "./results",
-    "max_concurrent_tasks": 4
+    "task_directory": "./tasks",
+    "result_directory": "./results",
+    "log_file": "./agent.log"
 }

@@ -1,21 +1,14 @@
-add_executable(test_web_agent
-    test_web-agent.cpp
-    ${CMAKE_SOURCE_DIR}/src/config.cpp
-    ${CMAKE_SOURCE_DIR}/src/logger.cpp
-)
+enable_testing()
 
-target_include_directories(test_web_agent PRIVATE 
-    ${CMAKE_SOURCE_DIR}/include
+add_executable(test_web_agent
+    test_config.cpp
+    test_network.cpp
 )
 
 target_link_libraries(test_web_agent PRIVATE
-    GTest::gtest
-    GTest::gtest_main
-    cpr::cpr           # <-- Тоже маленькими буквами
-    nlohmann_json::nlohmann_json
-    spdlog::spdlog
-    Threads::Threads
+    agent_lib
+    gtest
+    gtest_main
 )
 
-include(GoogleTest)
-gtest_discover_tests(test_web_agent)
+add_test(NAME AgentTests COMMAND test_web_agent)

@@ -1,43 +1,34 @@
 #pragma once
-
-#include <string>
-#include <atomic>
-#include <memory>
+#include "config.h"
+#include "network.h"
 #include <thread>
-#include <chrono>
+#include <atomic>
+#include <queue>
+#include <mutex>
 
-namespace cardiology {
-
-class Agent {
-public:
-    Agent();
-    ~Agent();
-    
-    // Инициализация агента
-    bool initialize(const std::string& config_file);
-    
-    // Запуск агента
-    void run();
-    
-    // Остановка агента
-    void stop();
-    
-    // Проверка состояния
-    bool isRunning() const;
-
-private:
-    // Основной цикл опроса сервера
-    void mainLoop();
-    
-    // Обработчик сигналов (статический)
-    static void signalHandler(int signal);
-    
-    std::atomic<bool> running_{false};
-    std::atomic<bool> initialized_{false};
-    std::unique_ptr<std::thread> main_thread_;
-    
-    // Интервал опроса (будет загружен из конфига)
-    std::chrono::seconds poll_interval_{5};
+struct Task {
+    std::string session_id;
+    std::string task_code;
+    std::string options;
 };
 
-} // namespace cardiology
+class WebAgent {
+    Config config;
+    NetworkClient network;
+    std::string access_code;
+    std::atomic<bool> running;
+    std::thread pollThread;
+    std::queue<Task> taskQueue;
+    std::mutex queueMutex;
+    std::vector<std::thread> workerThreads;
+
+public:
+    WebAgent(const Config& cfg);
+    void start();
+    void stop();
+
+private:
+    void pollLoop();
+    void workerLoop();
+    void executeTask(const Task& task);
+};
