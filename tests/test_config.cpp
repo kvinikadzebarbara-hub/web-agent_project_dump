@@ -15,6 +15,16 @@ TEST(ConfigTest, LoadValidConfig) {
     std::remove("test_config.json");
 }
 
-TEST(ConfigTest, LoadInvalidPath) {
-    EXPECT_THROW(Config::load("nonexistent.json"), std::runtime_error);
+TEST(ConfigTest, LoadConfigWithWrongType) {
+    std::ofstream file("test_config_wrong_type.json");
+    // poll_interval_sec должен быть числом, но тут строка "five"
+    file << R"({"uid": "test-002", "server_url": "http://test.com", "poll_interval_sec": "five"})";
+    file.close();
+
+    // Текущее поведение: бросается исключение nlohmann::json::type_error
+    EXPECT_THROW({
+        Config cfg = Config::load("test_config_wrong_type.json");
+    }, nlohmann::json_abi_v3_11_2::detail::type_error);
+
+    std::remove("test_config_wrong_type.json");
 }
