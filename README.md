@@ -1,13 +1,15 @@
-# Web-agent-Cardiology
+# Web-Agent Cardiology
+
+## Описание
+Кроссплатформенный веб-агент для сбора медицинских данных.
 
 ## Требования
-- CMake 3.10+
-- Компилятор с поддержкой C++17 (MSVC 2019+, GCC 7+, Clang 5+)
-- Библиотеки: nlohmann/json, spdlog, Google Test (для тестов)
+- C++17
+- CMake 3.15+
+- libssl-dev, zlib1g-dev
 
 ## Сборка
 ```bash
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 cmake --build .
