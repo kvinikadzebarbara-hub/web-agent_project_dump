@@ -39,3 +39,37 @@
 
 # debug information files
 *.dwo
+# Сборка и временные файлы
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+*.cmake
+Makefile
+
+# Логи и результаты
+logs/
+results/
+*.log
+
+# Конфигурация (если нужно исключить, но обычно config.json нужно в репозитории)
+# config.json  # <-- Раскомментируйте если не хотите хранить конфиг в репозитории
+
+# Файлы macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Временные файлы
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.user
+*.useros
+*.userprefs

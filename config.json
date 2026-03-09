@@ -1,0 +1,10 @@
+{
+    "uid": "cardiology-agent-001",
+    "server_url": "https://api.example.com/agent",
+    "poll_interval_sec": 10,
+    "log_file": "logs/agent.log",
+    "log_level": "debug",
+    "work_dir": "./work",
+    "result_dir": "./results",
+    "max_concurrent_tasks": 4
+}
