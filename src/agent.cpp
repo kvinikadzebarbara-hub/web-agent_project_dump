@@ -42,26 +42,30 @@ void WebAgent::pollLoop() {
         bool hasTask = false;
 
         if (!taskJson.is_null() && taskJson.contains("code_responce")) {
-            try {
-                std::string code = taskJson["code_responce"].get<std::string>();
-                if (code == "1") {
-                    hasTask = true;
-                } else if (code == "0") {
-                    // Нет задания, ждем
-                    Logger::debug("No task, waiting...");
-                } else if (code == "-2") {
-                    Logger::error("Invalid access code or request");
-                }
-            } catch (const std::exception& e) {
-                Logger::error("Error parsing code_responce: " + std::string(e.what()));
-            }
+    try {
+        // code_responce может быть числом ИЛИ строкой
+        if (taskJson["code_responce"].is_number()) {
+            int code = taskJson["code_responce"].get<int>();
+            if (code == 1) hasTask = true;
+            else if (code == 0) Logger::debug("No task, waiting...");
+            else if (code == -2) Logger::error("Invalid access code");
         }
+        else if (taskJson["code_responce"].is_string()) {
+            std::string code = taskJson["code_responce"].get<std::string>();
+            if (code == "1") hasTask = true;
+            else if (code == "0") Logger::debug("No task, waiting...");
+            else if (code == "-2") Logger::error("Invalid access code");
+        }
+    } catch (const std::exception& e) {
+        Logger::error("Error parsing code_responce: " + std::string(e.what()));
+    }
+}
 
         if (hasTask) {
             Task t;
             t.session_id = taskJson.value("session_id", "");
             t.task_code = taskJson.value("task_code", "");
-            t.options = taskJson.value("options", "");
+
 
             {
                 std::lock_guard<std::mutex> lock(queueMutex);
