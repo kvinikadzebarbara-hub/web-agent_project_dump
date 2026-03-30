@@ -49,6 +49,7 @@ add_library(agent_lib STATIC
     src/logger.cpp
     src/network.cpp
     src/agent.cpp
+    src/TaskExecutor.cpp
 )
 
 target_include_directories(agent_lib PUBLIC include)

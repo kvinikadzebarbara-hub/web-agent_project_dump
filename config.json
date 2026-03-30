@@ -1,9 +1,10 @@
 {
-    "uid": "agent-001",
+    "uid": "agent-office_clerk_v4",
     "descr": "web-agent",
     "server_url": "https://xdev.arkcom.ru:9999/app/webagent1/api",
     "poll_interval_sec": 10,
     "task_directory": "./tasks",
     "result_directory": "./results",
-    "log_file": "./agent.log"
+    "log_file": "./agent.log",
+    "access_code": "dced4c-5e23-42b7-c67f-366c61b2"
 }

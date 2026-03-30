@@ -5,12 +5,7 @@
 #include <atomic>
 #include <queue>
 #include <mutex>
-
-struct Task {
-    std::string session_id;
-    std::string task_code;
-    std::string options;
-};
+#include "TaskExecutor.h" 
 
 class WebAgent {
     Config config;

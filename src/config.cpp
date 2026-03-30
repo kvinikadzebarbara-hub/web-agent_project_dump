@@ -20,6 +20,6 @@ Config Config::load(const std::string& path) {
     cfg.task_directory = j.value("task_directory", "./tasks");
     cfg.result_directory = j.value("result_directory", "./results");
     cfg.log_file = j.value("log_file", "./agent.log");
-
+    cfg.access_code = j.value("access_code", "");                    //access code
     return cfg;
 }
