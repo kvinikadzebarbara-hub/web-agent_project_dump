@@ -38,7 +38,9 @@ sudo pacman -S gcc cmake openssl meson
 mkdir -p build && cd build && cmake .. && cmake --build .
 ```
 ### Запуск программы:
-``` ./web_agent ```
+```
+./web_agent 
+```
 ## Используемые технологии
 * C++17
 * CMake
