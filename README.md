@@ -23,7 +23,6 @@ macOS (macOS 12 (Monterey) и новее)
 brew install cmake openssl
 2. Для Ubuntu/Debian:
 sudo apt update
-sudo apt install build-essential cmake libssl-dev
 3. Для Fedora, CentOS, RHEL и производных: 
  sudo dnf install gcc-c++ cmake openssl-devel meson ninja-build
 4. Для Arch Linux:
@@ -52,8 +51,3 @@ mkdir -p build && cd build && cmake .. && cmake --build .
 * spdlog 
 * Google Test
 * REST API 
-
-## Документация
-```bash 
-docs/technical_spec.md
-```
