@@ -34,11 +34,10 @@ sudo pacman -S gcc cmake openssl meson
 * OpenSSL
 * Meson
 ## Сборка проекта:
-```
-mkdir -p build && cd build && cmake .. && cmake --build . ```
-Запуск программы:
-```
-./web_agent ```
+``` mkdir -p build && cd build && cmake .. && cmake --build . ```
+
+## Запуск программы:
+```./web_agent ```
 
 ## Используемые технологии
 * C++17 
