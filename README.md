@@ -9,8 +9,8 @@ Web-Agent — это кроссплатформенный C++ агент, кот
 
 ## Поддерживаемые платформы
 Проект WEB-AGENT является полностью кроссплатформенным и поддерживает следующие операционные системы:
-Windows (Windows 10 / Windows 11)
-Linux (Ubuntu 20.04+, Debian 11+, Fedora 38+, CentOS 8+, RHEL 8+, Arch Linux)
+Windows (Windows 10 / Windows 11),
+Linux (Ubuntu 20.04+, Debian 11+, Fedora 38+, CentOS 8+, RHEL 8+, Arch Linux),
 macOS (macOS 12 (Monterey) и новее)
                   
 ## Требования:
@@ -34,10 +34,10 @@ sudo pacman -S gcc cmake openssl meson
 * OpenSSL
 * Meson
 ## Сборка проекта:
-``` mkdir -p build && cd build && cmake .. && cmake --build . ```
+```bash mkdir -p build && cd build && cmake .. && cmake --build . ```
 
 ## Запуск программы:
-```./web_agent ```
+```bash ./web_agent ```
 
 ## Используемые технологии
 * C++17 
@@ -50,4 +50,4 @@ sudo pacman -S gcc cmake openssl meson
 * REST API 
 
 ## Документация
-docs/technical_spec.md
+```bash docs/technical_spec.md ```
