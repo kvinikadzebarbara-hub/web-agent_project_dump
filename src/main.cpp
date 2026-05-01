@@ -1,11 +1,16 @@
+// src/main.cpp (оригинал из репозитория)
 #include "agent.h"
 #include "config.h"
 #include "logger.h"
+#include <iostream>
 #include <csignal>
 #include <thread>
 
 static WebAgent* g_agent = nullptr;
-static void signalHandler(int) { if (g_agent) g_agent->stop(); }
+
+static void signalHandler(int) {
+    if (g_agent) g_agent->stop();
+}
 
 int main() {
     try {
