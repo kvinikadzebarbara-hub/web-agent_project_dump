@@ -112,9 +112,7 @@ cd web-agent_project_dump
 sudo apt update && sudo apt install -y cmake build-essential libcurl4-openssl-dev libssl-dev
 
 # 3. Сборка
-mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build . --parallel
+mkdir -p build && cd build && cmake .. && cmake --build . 
 
 # 4. Запуск
 ./web_agent
