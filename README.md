@@ -44,10 +44,10 @@ macOS (macOS 12 (Monterey) и новее)
 ###  Просмотр в реальном времени
 ```bash
 # Linux/macOS
-tail -f ./agent.log | grep --color -E "ERROR|TASK|FILE|network"
+tail -f ./agent.log 
 
 # Windows PowerShell
-Get-Content .\agent.log -Wait | Select-String "ERROR"
+Get-Content .\agent.log 
 ```
 
 ### 🔄 Уровни логирования
