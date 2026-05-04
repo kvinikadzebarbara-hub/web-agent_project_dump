@@ -97,10 +97,6 @@ ctest --output-on-failure
 
 ---
 
-## Запуск программы:
-```bash
-./web_agent
- ```
 ## ⚡ Быстрый старт
 
 ```bash
